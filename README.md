@@ -21,7 +21,6 @@ This project solves that by implementing a **Warm Standby** architecture. It mai
 | **Amazon ECS (AWS Fargate)** | Serverless container compute for the primary application |
 | **AWS Lambda (Python 3.10)** | Executing the automated disaster recovery failover logic |
 | **Amazon RDS (MySQL)** | Primary data store with continuous Cross-Region Read Replicas |
-| **Amazon ElastiCache (Redis)** | High-speed data caching |
 | **Amazon Route 53** | Global DNS routing and automated health check failover |
 | **AWS KMS & Secrets Manager** | Multi-region data encryption and secure credential storage |
 | **Amazon CloudWatch & SNS** | System observability, alarm triggering, and admin notifications |
