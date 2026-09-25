@@ -35,6 +35,62 @@ This project solves that by implementing a **Warm Standby** architecture. It mai
    - It dynamically scales the DR ECS Fargate cluster from 1 task (standby) to the full production desired count.
    - Route 53 automatically updates DNS routing to point to the DR ALB.
 
+## 🏗️ Architecture Diagram
+```mermaid
+graph TD
+    %% Styling Configuration
+    classDef aws fill:#FF9900,color:#fff,stroke:#fff,stroke-width:2px,font-weight:bold,rx:5px,ry:5px
+    classDef primary fill:#232F3E,color:#fff,stroke:#FF9900,stroke-width:2px,rx:5px,ry:5px
+    classDef dr fill:#116F3D,color:#fff,stroke:#fff,stroke-width:2px,rx:5px,ry:5px
+    classDef alert fill:#D32F2F,color:#fff,stroke:#fff,stroke-width:2px,rx:5px,ry:5px
+
+    %% Global Components
+    User(("👤 Users"))
+    DNS["🌍 Amazon Route 53 (DNS)"]:::aws
+
+    %% Primary Region
+    subgraph Primary["Primary Region (ap-south-1) - ACTIVE"]
+        ALB1["Primary ALB"]:::primary
+        ECS1["ECS Fargate (Production)"]:::primary
+        RDS1["Primary RDS (Writer)"]:::primary
+        
+        ALB1 -->|"Forwards Traffic"| ECS1
+        ECS1 -->|"Reads/Writes Data"| RDS1
+    end
+
+    %% DR Region
+    subgraph DR["DR Region (ap-southeast-1) - WARM STANDBY"]
+        ALB2["DR ALB"]:::dr
+        ECS2["ECS Fargate (Scaled Down)"]:::dr
+        RDS2["DR RDS (Replica)"]:::dr
+        Lambda["⚡ Failover Lambda Orchestrator"]:::aws
+        
+        ALB2 -.->|"Ready on Standby"| ECS2
+        ECS2 -.->|"Ready on Standby"| RDS2
+    end
+    
+    %% Alerting Components
+    CW(("⚠️ CloudWatch Alarm")):::alert
+    SNS{{"📩 SNS Topic"}}:::alert
+
+    %% Flow: Normal Traffic
+    User -->|"1. Normal Traffic"| DNS
+    DNS -->|"2. Primary Routing"| ALB1
+    
+    %% Flow: Data Replication
+    RDS1 -.->|"3. Continuous Replication"| RDS2
+    
+    %% Flow: Disaster Detection
+    DNS -.->|"A. Health Check Fails!"| CW
+    CW -.->|"B. Triggers"| SNS
+    SNS -.->|"C. Invokes"| Lambda
+    
+    %% Flow: Recovery Actions
+    Lambda -.->|"Action 1. Promotes to Writer"| RDS2
+    Lambda -.->|"Action 2. Scales Up to Production"| ECS2
+    Lambda -.->|"Action 3. Updates DNS Routing"| DNS
+```
+
 ## 📂 Repository Structure
 ```text
 Recovery-Engine-AWS/
