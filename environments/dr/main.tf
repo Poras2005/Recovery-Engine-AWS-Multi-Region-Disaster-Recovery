@@ -144,7 +144,6 @@ module "database" {
   database_sg_id          = module.networking.database_sg_id
   cache_sg_id             = module.networking.cache_sg_id
   kms_key_arn             = module.security.kms_key_arn
-  rds_monitoring_role_arn = module.security.rds_monitoring_role_arn
 
   database_name      = var.database_name
   db_master_username = var.db_master_username
@@ -178,7 +177,6 @@ module "compute" {
   kms_key_arn            = module.security.kms_key_arn
   ecs_execution_role_arn = module.security.ecs_execution_role_arn
   ecs_task_role_arn      = module.security.ecs_task_role_arn
-  lambda_role_arn        = module.security.lambda_role_arn
   acm_certificate_arn    = var.dr_acm_certificate_arn
   alb_logs_bucket        = module.storage.alb_logs_bucket_id
   container_image        = var.container_image
