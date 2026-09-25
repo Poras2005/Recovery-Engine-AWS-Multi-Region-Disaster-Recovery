@@ -14,13 +14,18 @@ Many applications rely on Single-Region architectures or simple Multi-AZ setups,
 This project solves that by implementing a **Warm Standby** architecture. It maintains a scaled-down footprint in the secondary region that costs only ~15% of the primary production environment. When a regional outage is detected, the engine automatically scales the secondary region up and takes over live traffic in under 15 minutes (**RTO**) with nearly zero data loss (**RPO < 5 minutes**) using RDS Cross-Region Replication.
 
 ## 🛠️ Tech Stack
-- **Infrastructure as Code (IaC):** Terraform (HCL)
-- **Compute:** Amazon ECS (AWS Fargate), AWS Lambda (Python 3.10)
-- **Database & Cache:** Amazon RDS (MySQL) with Cross-Region Read Replicas, Amazon ElastiCache (Redis)
-- **Networking:** Amazon VPC, Application Load Balancers, Route 53 (DNS Failover)
-- **Security:** AWS IAM, AWS KMS (Multi-Region Keys), AWS Secrets Manager
-- **Observability:** Amazon CloudWatch (Alarms & Dashboards), Amazon SNS
-- **CI/CD & Testing:** GitHub Actions (`tflint`, `terraform validate`, `pytest` with `unittest.mock`)
+
+| Technology | Used For |
+| :--- | :--- |
+| **Terraform (HCL)** | Infrastructure as Code (IaC) for multi-region provisioning |
+| **Amazon ECS (AWS Fargate)** | Serverless container compute for the primary application |
+| **AWS Lambda (Python 3.10)** | Executing the automated disaster recovery failover logic |
+| **Amazon RDS (MySQL)** | Primary data store with continuous Cross-Region Read Replicas |
+| **Amazon ElastiCache (Redis)** | High-speed data caching |
+| **Amazon Route 53** | Global DNS routing and automated health check failover |
+| **AWS KMS & Secrets Manager** | Multi-region data encryption and secure credential storage |
+| **Amazon CloudWatch & SNS** | System observability, alarm triggering, and admin notifications |
+| **GitHub Actions** | CI/CD pipeline (\	flint\, formatting, and Python \pytest\ mock testing) |
 
 ## 🏗️ Architecture & How It Works
 1. **Normal Operation:** All traffic routes via Route 53 to the Primary ALB in `ap-south-1`. The ECS Fargate tasks connect to the Primary RDS instance. RDS continuously replicates data asynchronously to a Read Replica in `ap-southeast-1`.
