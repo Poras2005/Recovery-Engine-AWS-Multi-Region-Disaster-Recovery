@@ -48,7 +48,7 @@ locals {
     Project     = var.app_name
     Environment = "dr"
     ManagedBy   = "terraform"
-    Repository  = "aws-multi-region-dr"
+    Repository  = "recovery-engine-aws"
     Owner       = var.owner_tag
     DRRole      = "warm-standby"
   }
@@ -132,7 +132,7 @@ module "storage" {
   # DR bucket does NOT initiate replication; it receives it
   dr_bucket_arn        = ""
   replication_role_arn = ""
-  elb_service_account_id = var.elb_service_account_id  # eu-west-1
+  elb_account_id         = var.elb_service_account_id  # eu-west-1
   tags = local.common_tags
 }
 

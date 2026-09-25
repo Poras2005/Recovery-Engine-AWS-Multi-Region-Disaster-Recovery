@@ -41,8 +41,8 @@ resource "aws_db_instance" "main" {
   max_allocated_storage  = 100
 
   backup_retention_period      = var.backup_retention_days
-  preferred_backup_window      = "02:00-03:00"
-  preferred_maintenance_window = "sun:04:00-sun:05:00"
+  backup_window                = "02:00-03:00"
+  maintenance_window           = "sun:04:00-sun:05:00"
 
   deletion_protection          = var.deletion_protection
   skip_final_snapshot          = var.skip_final_snapshot

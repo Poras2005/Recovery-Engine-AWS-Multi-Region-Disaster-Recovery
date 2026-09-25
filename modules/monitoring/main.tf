@@ -166,7 +166,7 @@ resource "aws_cloudwatch_dashboard" "dr_overview" {
     widgets = [
       {
         type   = "metric"
-        x      = 0; y = 0; width = 12; height = 6
+        x = 0, y = 0, width = 12, height = 6
         properties = {
           title   = "RDS Replication Lag (Seconds)"
           metrics = [["AWS/RDS", "ReplicaLag", "DBInstanceIdentifier", var.dr_cluster_id]]
@@ -180,7 +180,7 @@ resource "aws_cloudwatch_dashboard" "dr_overview" {
       },
       {
         type   = "metric"
-        x      = 12; y = 0; width = 12; height = 6
+        x = 12, y = 0, width = 12, height = 6
         properties = {
           title   = "Route 53 Health Check Status"
           metrics = [
@@ -194,7 +194,7 @@ resource "aws_cloudwatch_dashboard" "dr_overview" {
       },
       {
         type   = "metric"
-        x      = 0; y = 6; width = 8; height = 6
+        x = 0, y = 6, width = 8, height = 6
         properties = {
           title   = "ECS Service — Running Tasks"
           metrics = [["ECS/ContainerInsights", "RunningTaskCount", "ServiceName", var.ecs_service_name, "ClusterName", var.ecs_cluster_name]]
@@ -205,7 +205,7 @@ resource "aws_cloudwatch_dashboard" "dr_overview" {
       },
       {
         type   = "metric"
-        x      = 8; y = 6; width = 8; height = 6
+        x = 8, y = 6, width = 8, height = 6
         properties = {
           title   = "ALB — Request Count & 5xx Errors"
           metrics = [
@@ -218,7 +218,7 @@ resource "aws_cloudwatch_dashboard" "dr_overview" {
       },
       {
         type   = "metric"
-        x      = 16; y = 6; width = 8; height = 6
+        x = 16, y = 6, width = 8, height = 6
         properties = {
           title   = "RDS DB Connections"
           metrics = [["AWS/RDS", "DatabaseConnections", "DBInstanceIdentifier", var.dr_cluster_id]]

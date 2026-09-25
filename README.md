@@ -1,137 +1,131 @@
-# AWS Multi-Region Warm Standby DR — Terraform Infrastructure
+# Recovery-Engine-AWS: Multi-Region Disaster Recovery
 
-Production-grade Terraform for a **Warm Standby** Disaster Recovery architecture across two AWS regions.
+![Terraform](https://img.shields.io/badge/Terraform-1.6+-844FBA?style=for-the-badge&logo=terraform&logoColor=white)
+![AWS](https://img.shields.io/badge/AWS-Cloud-FF9900?style=for-the-badge&logo=amazonaws&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3.10-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![GitHub Actions](https://img.shields.io/badge/CI%2FCD-GitHub_Actions-2088FF?style=for-the-badge&logo=github-actions&logoColor=white)
 
-## Architecture
+## 📌 Project Overview
+An enterprise-grade, fully automated Multi-Region Disaster Recovery (DR) architecture provisioned entirely via Terraform. This engine guarantees high availability for mission-critical applications by orchestrating a seamless failover from a primary AWS region (`ap-south-1`) to a secondary region (`ap-southeast-1`) in the event of a catastrophic regional outage.
 
-| Region | Role | Cost Model |
-|---|---|---|
-| `ap-south-1` | Primary — serves 100% of live traffic | Full production sizing |
-| `ap-southeast-1` | DR — warm standby, scales on failover | ~15% of primary cost |
+## ❓ Why? (The Problem it Solves)
+Many applications rely on Single-Region architectures or simple Multi-AZ setups, which are highly vulnerable to complete AWS Region outages. Achieving true cross-region high availability usually requires complex "Active-Active" architectures that effectively double your monthly cloud bill. 
 
-**RPO:** < 5 minutes (RDS Read Replica)  
-**RTO:** < 15 minutes (automated failover Lambda)
+This project solves that by implementing a **Warm Standby** architecture. It maintains a scaled-down footprint in the secondary region that costs only ~15% of the primary production environment. When a regional outage is detected, the engine automatically scales the secondary region up and takes over live traffic in under 15 minutes (**RTO**) with nearly zero data loss (**RPO < 5 minutes**) using RDS Cross-Region Replication.
 
-## Repository Structure
+## 🛠️ Tech Stack
+- **Infrastructure as Code (IaC):** Terraform (HCL)
+- **Compute:** Amazon ECS (AWS Fargate), AWS Lambda (Python 3.10)
+- **Database & Cache:** Amazon RDS (MySQL) with Cross-Region Read Replicas, Amazon ElastiCache (Redis)
+- **Networking:** Amazon VPC, Application Load Balancers, Route 53 (DNS Failover)
+- **Security:** AWS IAM, AWS KMS (Multi-Region Keys), AWS Secrets Manager
+- **Observability:** Amazon CloudWatch (Alarms & Dashboards), Amazon SNS
+- **CI/CD & Testing:** GitHub Actions (`tflint`, `terraform validate`, `pytest` with `unittest.mock`)
 
-```
-terraform-aws-dr/
+## 🏗️ Architecture & How It Works
+1. **Normal Operation:** All traffic routes via Route 53 to the Primary ALB in `ap-south-1`. The ECS Fargate tasks connect to the Primary RDS instance. RDS continuously replicates data asynchronously to a Read Replica in `ap-southeast-1`.
+2. **Failure Detection:** Route 53 Health Checks monitor the Primary ALB. If it fails consecutively for 60 seconds, a CloudWatch Alarm triggers an SNS topic.
+3. **Automated Failover Orchestration:** The SNS topic invokes a Python-based AWS Lambda function in the DR region. 
+4. **Recovery Steps:** 
+   - The Lambda promotes the RDS Read Replica to a standalone writer.
+   - It updates AWS Systems Manager (SSM) Parameter Store with the new database endpoints.
+   - It dynamically scales the DR ECS Fargate cluster from 1 task (standby) to the full production desired count.
+   - Route 53 automatically updates DNS routing to point to the DR ALB.
+
+## 📂 Repository Structure
+```text
+Recovery-Engine-AWS/
+├── prerequisites/         # S3 backend and DynamoDB lock tables for TF State
 ├── environments/
-│   ├── primary/          # ap-south-1 full-stack environment
-│   └── dr/               # ap-southeast-1 warm standby environment
+│   ├── primary/           # Primary region stack (ap-south-1)
+│   └── dr/                # DR region warm-standby stack (ap-southeast-1)
 ├── modules/
-│   ├── networking/       # VPC, subnets, IGW, NAT, VPC peering
-│   ├── compute/          # ECS Fargate cluster + services
-│   ├── database/         # RDS MySQL with Cross-Region Replica, ElastiCache
-│   ├── storage/          # S3 with CRR, AWS Backup vault
-│   ├── dns/              # Route 53 hosted zone, health checks, failover records
-│   ├── monitoring/       # CloudWatch alarms, dashboards, SNS
-│   ├── security/         # IAM roles, KMS keys, Security Groups, Secrets Manager
-│   └── backup/           # AWS Backup plans and vaults
+│   ├── networking/        # VPCs, Subnets, NAT, Peering
+│   ├── compute/           # ECS Fargate, ALB, Auto Scaling
+│   ├── database/          # RDS, ElastiCache
+│   ├── security/          # IAM roles, KMS, Secrets Manager
+│   ├── storage/           # S3 buckets with Cross-Region Replication
+│   ├── monitoring/        # CloudWatch Alarms, SNS, Dashboards
+│   └── dns/               # Route 53 Hosted Zones and Failover Records
 ├── scripts/
-│   ├── failover_lambda.py     # Automated failover orchestrator
-│   └── simulate_failover.py   # Game-day testing script (Python)
-└── policies/
-    └── failover_lambda_policy.json
+│   ├── failover_lambda.py   # The DR Failover Orchestrator (Python)
+│   └── simulate_failover.py # Game-day testing CLI tool
+├── tests/
+│   └── test_failover_lambda.py # Pytest suite using Boto3 Mocking
+└── .github/workflows/     # CI pipeline (Terraform validate, tflint, pytest)
 ```
 
-## Quick Start
+## 🚀 How to Deploy (Step-by-Step)
 
-### Prerequisites
-- AWS CLI configured with profiles for both accounts (or single account)
-- Terraform >= 1.6
-- Two AWS regions available
+### Step 1: Prerequisites
+- AWS CLI installed and configured (`aws configure`) with Administrator permissions.
+- Terraform >= 1.6 installed locally.
 
-### 1. Bootstrap remote state (run once)
+### Step 2: Bootstrap Terraform State
+Terraform needs an S3 bucket to securely store its state and prevent concurrent modification conflicts.
 ```bash
-cd environments/primary
+cd prerequisites
 terraform init
-terraform apply -target=aws_s3_bucket.terraform_state -target=aws_dynamodb_table.terraform_locks
+terraform apply -auto-approve
 ```
+*Take note of the output bucket names and DynamoDB table names.*
 
-### 2. Deploy primary region
+### Step 3: Configure Primary Environment
+1. Navigate to the primary environment:
+   ```bash
+   cd ../environments/primary
+   ```
+2. Open `main.tf` and replace `"REPLACE_WITH_YOUR_STATE_BUCKET"` and `"REPLACE_WITH_YOUR_LOCK_TABLE"` in the `backend "s3"` block with the names generated in Step 2.
+3. Copy the example variables file:
+   ```bash
+   cp terraform.tfvars.example terraform.tfvars
+   ```
+4. Edit `terraform.tfvars` and insert a highly secure `db_master_password`.
+5. Deploy the primary infrastructure:
+   ```bash
+   terraform init
+   terraform apply
+   ```
+
+### Step 4: Configure DR Environment
+1. Navigate to the DR environment:
+   ```bash
+   cd ../dr
+   ```
+2. Open `main.tf` and update the backend block with your bucket names (just like you did in Step 3).
+3. Deploy the DR stack. *Note: The DR environment will automatically pull the RDS ARN from the primary state to create the cross-region replica.*
+   ```bash
+   terraform init
+   terraform apply
+   ```
+
+### Step 5: Game-Day Testing (Simulate a Failure)
+You can safely test the automated failover orchestration without manually shutting down AWS services by running the included Python simulation script:
 ```bash
-cd environments/primary
-cp terraform.tfvars.example terraform.tfvars
-# Edit terraform.tfvars with your values
-terraform init
-terraform plan
-terraform apply
+python scripts/simulate_failover.py --region ap-south-1 --trigger-alarm
 ```
 
-### 3. Deploy DR region
-```bash
-cd environments/dr
-cp terraform.tfvars.example terraform.tfvars
-# Edit terraform.tfvars — set primary_global_cluster_id from primary output
-terraform init
-terraform plan
-terraform apply
-```
+## 🧹 Teardown Steps
+To avoid incurring unnecessary AWS charges when you are done testing, destroy the infrastructure in **reverse order**:
+1. **Destroy DR:** 
+   ```bash
+   cd environments/dr
+   terraform destroy -auto-approve
+   ```
+2. **Destroy Primary:** 
+   ```bash
+   cd ../primary
+   terraform destroy -auto-approve
+   ```
+3. **Destroy Prerequisites:** 
+   ```bash
+   cd ../../prerequisites
+   terraform destroy -auto-approve
+   ```
 
-### 4. Verify replication
-```bash
-# Check RDS replication lag
-aws cloudwatch get-metric-statistics \
-  --region ap-southeast-1 \
-  --namespace AWS/RDS \
-  --metric-name ReplicaLag \
-  --dimensions Name=DBInstanceIdentifier,Value=myapp-dr-db \
-  --start-time $(date -u -d '1 hour ago' +%Y-%m-%dT%H:%M:%S) \
-  --end-time $(date -u +%Y-%m-%dT%H:%M:%S) \
-  --period 60 --statistics Average
-```
-
-### 5. Simulate failover (game day)
-```bash
-pip install boto3
-python scripts/simulate_failover.py --dry-run
-python scripts/simulate_failover.py --execute   # triggers real failover
-```
-
-## Key Variables
-
-| Variable | Description | Example |
-|---|---|---|
-| `app_name` | Application name prefix | `myapp` |
-| `primary_region` | Primary AWS region | `us-east-1` |
-| `dr_region` | DR AWS region | `eu-west-1` |
-| `domain_name` | Route 53 hosted zone | `example.com` |
-| `db_master_password` | Aurora master password (use Secrets Manager) | — |
-| `container_image` | ECR image URI | `123456789.dkr.ecr.us-east-1.amazonaws.com/myapp:latest` |
-
-## Cost Estimate
-
-| Component | Primary/mo | DR/mo |
-|---|---|---|
-| RDS MySQL (db.t3.micro) | ~$15 | ~$15 |
-| ECS Fargate (2 tasks) | ~$30 | ~$15 (1 task) |
-| ElastiCache (cache.t3.micro) | ~$12 | ~$12 |
-| ALB + NAT + data transfer | ~$120 | ~$60 |
-| Route 53 + health checks | ~$10 | ~$5 |
-| S3 CRR + Backup | ~$30 | ~$15 |
-| **Total** | **~$920** | **~$173** |
-
-*Estimates only. Actual costs depend on data transfer, request volume, and region pricing.*
-
-## Failover
-
-Failover is **fully automated** via:
-1. Route 53 health check → detects primary ALB failure (3 × 10s checks)
-2. CloudWatch Alarm → fires after 60s of sustained failure
-3. SNS → triggers failover Lambda
-4. Lambda → promotes RDS Read Replica, scales ECS Fargate tasks, updates SSM params
-5. Route 53 → automatically flips DNS to DR ALB (via failover record)
-
-Total automated failover time: **< 15 minutes** (dominated by RDS Read Replica promotion).
-
-## Testing
-
-Run game days quarterly:
-```bash
-# Inject 503s on the primary health check endpoint
-aws elbv2 modify-rule --rule-arn <health-check-rule-arn> \
-  --actions Type=fixed-response,FixedResponseConfig='{StatusCode=503}'
-```
-
-Watch CloudWatch dashboards and verify DNS flips to DR region automatically.
+## 🔒 Security & Best Practices Followed
+- **Least Privilege IAM:** All ECS tasks, Lambda functions, and AWS services use strictly scoped IAM roles generated automatically by Terraform.
+- **Encryption at Rest:** Multi-region AWS KMS keys are utilized to encrypt S3 buckets, RDS databases, and CloudWatch logs.
+- **Secret Management:** Database credentials and Redis auth tokens are randomly generated by Terraform and stored securely in AWS Secrets Manager, ensuring they are never exposed in plaintext logs.
+- **Network Isolation:** All compute (ECS) and data (RDS, ElastiCache) resources are placed in private subnets with zero direct inbound internet access.
+- **CI/CD Automated Testing:** The repository leverages GitHub Actions to execute `tflint`, enforce HCL formatting, run structural Terraform validations, and execute `pytest` unit tests (using mocked Boto3 clients) on every single commit.

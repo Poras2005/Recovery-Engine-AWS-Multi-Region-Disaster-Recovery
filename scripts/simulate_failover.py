@@ -15,7 +15,7 @@ import sys
 from datetime import datetime, timedelta
 
 # ── Config ────────────────────────────────────────────────────────
-APP_NAME = os.environ.get("APP_NAME", "myapp")
+APP_NAME = os.environ.get("APP_NAME", "recovery-engine")
 PRIMARY_REGION = os.environ.get("PRIMARY_REGION", "ap-south-1")
 DR_REGION = os.environ.get("DR_REGION", "ap-southeast-1")
 DOMAIN = os.environ.get("DOMAIN", "api.example.com")

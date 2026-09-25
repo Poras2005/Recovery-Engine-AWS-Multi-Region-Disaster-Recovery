@@ -57,7 +57,7 @@ locals {
     Project     = var.app_name
     Environment = "primary"
     ManagedBy   = "terraform"
-    Repository  = "aws-multi-region-dr"
+    Repository  = "recovery-engine-aws"
     Owner       = var.owner_tag
   }
 }
@@ -147,7 +147,11 @@ module "database" {
   kms_key_arn             = module.security.kms_key_arn
   rds_monitoring_role_arn = module.security.rds_monitoring_role_arn
 
-  backup_retention_days  = var.backup_retention_days
+  database_name           = var.database_name
+  db_master_username      = var.db_master_username
+  db_master_password      = var.db_master_password
+  
+  backup_retention_days   = var.backup_retention_days
   deletion_protection    = var.deletion_protection
 
   redis_node_type    = var.primary_redis_node_type

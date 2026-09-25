@@ -40,6 +40,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "app" {
   rule {
     id     = "expire-old-versions"
     status = "Enabled"
+    filter {}
     noncurrent_version_expiration {
       noncurrent_days = 90
     }
@@ -51,6 +52,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "app" {
   rule {
     id     = "intelligent-tiering"
     status = "Enabled"
+    filter {}
     transition {
       days          = 30
       storage_class = "INTELLIGENT_TIERING"
@@ -91,6 +93,8 @@ resource "aws_s3_bucket_replication_configuration" "app" {
       }
     }
 
+    filter {}
+    
     delete_marker_replication {
       status = "Enabled"
     }
@@ -137,6 +141,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "alb_logs" {
   rule {
     id     = "expire-logs"
     status = "Enabled"
+    filter {}
     expiration {
       days = 90
     }

@@ -2,7 +2,7 @@
 # Copy to terraform.tfvars and fill in your values.
 # Never commit terraform.tfvars to source control — add it to .gitignore.
 
-app_name       = "myapp"
+app_name       = "recovery-engine"
 aws_account_id = "123456789012"
 owner_tag      = "platform-team"
 

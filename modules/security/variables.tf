@@ -1,13 +1,36 @@
 # modules/security/variables.tf
-variable "app_name"            { type = string }
-variable "environment"         { type = string }
-variable "aws_region"          { type = string }
-variable "aws_account_id"      { type = string }
-variable "is_primary"          { type = bool    default = true }
-variable "db_master_username"  { type = string  default = "dbadmin" }
-variable "db_master_password"  { type = string  sensitive = true }
-variable "database_name"       { type = string  default = "appdb" }
-variable "tags"                { type = map(string) default = {} }
+variable "app_name"            {
+  type = string
+}
+variable "environment"         {
+  type = string
+}
+variable "aws_region"          {
+  type = string
+}
+variable "aws_account_id"      {
+  type = string
+}
+variable "is_primary"          {
+  type = bool    
+  default = true
+}
+variable "db_master_username"  {
+  type = string  
+  default = "dbadmin"
+}
+variable "db_master_password"  {
+  type = string  
+  sensitive = true
+}
+variable "database_name"       {
+  type = string  
+  default = "appdb"
+}
+variable "tags"                {
+  type = map(string) 
+  default = {}
+}
 
 # modules/security/outputs.tf
 output "kms_key_arn"              { value = aws_kms_key.main.arn }

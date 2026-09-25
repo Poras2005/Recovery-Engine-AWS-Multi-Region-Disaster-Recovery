@@ -1,0 +1,88 @@
+name: Terraform CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  validate-primary:
+    name: Validate Primary Environment
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.0
+
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v4
+        with:
+          tflint_version: v0.50.3
+
+      - name: Terraform Format
+        run: terraform fmt -check -recursive
+        
+      - name: TFLint
+        run: |
+          tflint --init
+          tflint -f compact --recursive
+
+      - name: Terraform Init (Primary)
+        working-directory: ./environments/primary
+        run: terraform init -backend=false
+
+      - name: Terraform Validate (Primary)
+        working-directory: ./environments/primary
+        run: terraform validate
+
+  validate-dr:
+    name: Validate DR Environment
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.0
+
+      - name: Terraform Init (DR)
+        working-directory: ./environments/dr
+        run: terraform init -backend=false
+
+      - name: Terraform Validate (DR)
+        working-directory: ./environments/dr
+        run: terraform validate
+
+  test-python-scripts:
+    name: Test Failover Scripts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          
+      - name: Check Python Syntax
+        run: |
+          python -m py_compile scripts/failover_lambda.py
+          python -m py_compile scripts/simulate_failover.py
+
+      - name: Install Pytest
+        run: pip install pytest boto3
+
+      - name: Run Unit Tests
+        env:
+          PYTHONPATH: .
+        run: pytest tests/ -v
