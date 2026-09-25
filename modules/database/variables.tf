@@ -21,15 +21,9 @@ variable "cache_sg_id" {
 variable "kms_key_arn" {
   type = string
 }
-variable "rds_monitoring_role_arn" {
-  type = string
-}
 
 # Aurora
-variable "aurora_engine_version" {
-  type    = string
-  default = "15.4"
-}
+
 variable "database_name" {
   type    = string
   default = "appdb"
@@ -42,18 +36,7 @@ variable "db_master_password" {
   type      = string
   sensitive = true
 }
-variable "aurora_min_acu" {
-  type    = number
-  default = 0.5
-}
-variable "aurora_max_acu" {
-  type    = number
-  default = 16
-}
-variable "aurora_instance_count" {
-  type    = number
-  default = 2
-}
+
 variable "global_cluster_id" {
   type    = string
   default = ""

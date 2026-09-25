@@ -85,10 +85,7 @@ variable "log_retention_days" {
 }
 
 # ── Database ──────────────────────────────────────────────────────
-variable "aurora_engine_version" {
-  type    = string
-  default = "15.4"
-}
+
 variable "database_name" {
   type    = string
   default = "appdb"
@@ -101,19 +98,7 @@ variable "db_master_password" {
   type      = string
   sensitive = true
 }
-variable "primary_aurora_min_acu" {
-  type    = number
-  default = 0.5
-}
-variable "primary_aurora_max_acu" {
-  type    = number
-  default = 16
-}
-variable "primary_aurora_instance_count" {
-  type        = number
-  default     = 2
-  description = "1 writer + N readers"
-}
+
 variable "backup_retention_days" {
   type    = number
   default = 7

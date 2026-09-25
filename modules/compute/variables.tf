@@ -32,9 +32,7 @@ variable "ecs_execution_role_arn" {
 variable "ecs_task_role_arn" {
   type = string
 }
-variable "lambda_role_arn" {
-  type = string
-}
+
 variable "acm_certificate_arn" {
   type = string
 }

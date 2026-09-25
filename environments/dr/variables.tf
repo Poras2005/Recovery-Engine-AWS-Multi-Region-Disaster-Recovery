@@ -11,10 +11,6 @@ variable "owner_tag" {
   default = "platform-team"
 }
 
-variable "primary_region" {
-  type    = string
-  default = "ap-south-1"
-}
 variable "dr_region" {
   type    = string
   default = "ap-southeast-1"
@@ -62,10 +58,6 @@ variable "log_retention_days" {
   default = 30
 }
 
-variable "aurora_engine_version" {
-  type    = string
-  default = "15.4"
-}
 variable "database_name" {
   type    = string
   default = "appdb"
@@ -78,10 +70,7 @@ variable "db_master_password" {
   type      = string
   sensitive = true
 }
-variable "aurora_max_acu" {
-  type    = number
-  default = 16
-}
+
 variable "backup_retention_days" {
   type    = number
   default = 7
@@ -112,7 +101,6 @@ variable "global_cluster_id_override" {
   default = ""
 }
 
-
 # environments/dr/outputs.tf
 
 output "vpc_id" { value = module.networking.vpc_id }
@@ -129,7 +117,6 @@ output "app_bucket_arn" { value = module.storage.app_bucket_arn }
 output "backup_vault_arn" { value = module.backup.vault_arn }
 output "failover_topic_arn" { value = module.monitoring.failover_trigger_topic_arn }
 output "failover_lambda_arn" { value = module.monitoring.failover_lambda_arn }
-
 
 # environments/dr/terraform.tfvars.example
 # Copy to terraform.tfvars and fill in your values.
