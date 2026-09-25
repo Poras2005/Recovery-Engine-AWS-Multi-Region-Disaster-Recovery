@@ -19,7 +19,7 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.6.0
+          terraform_version: 1.16.2
 
       - name: Setup TFLint
         uses: terraform-linters/setup-tflint@v4
@@ -52,7 +52,7 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.6.0
+          terraform_version: 1.16.2
 
       - name: Terraform Init (DR)
         working-directory: ./environments/dr
