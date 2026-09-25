@@ -58,10 +58,7 @@ locals {
     data.terraform_remote_state.primary.outputs.global_cluster_id,
     var.global_cluster_id_override
   )
-  primary_backup_vault_arn = try(
-    data.terraform_remote_state.primary.outputs.backup_vault_arn,
-    ""
-  )
+
 }
 
 # ── Security (DR KMS key, IAM roles including failover Lambda) ────
