@@ -41,7 +41,7 @@ resource "aws_lb_target_group" "app" {
   }
 
   deregistration_delay = 30
-  tags = merge(var.tags, { Name = "${var.app_name}-${var.environment}-tg" })
+  tags                 = merge(var.tags, { Name = "${var.app_name}-${var.environment}-tg" })
 }
 
 resource "aws_lb_listener" "https" {
@@ -124,15 +124,15 @@ resource "aws_ecs_task_definition" "app" {
         }
       ]
       environment = [
-        { name = "APP_ENV",    value = var.environment },
-        { name = "APP_PORT",   value = tostring(var.app_port) },
+        { name = "APP_ENV", value = var.environment },
+        { name = "APP_PORT", value = tostring(var.app_port) },
         { name = "AWS_REGION", value = var.aws_region }
       ]
       secrets = [
-        { name = "DB_HOST",      valueFrom = "/${var.app_name}/${var.environment}/db/endpoint" },
-        { name = "DB_PASSWORD",  valueFrom = "/${var.app_name}/${var.environment}/db/password" },
-        { name = "REDIS_HOST",   valueFrom = "/${var.app_name}/${var.environment}/cache/endpoint" },
-        { name = "REDIS_AUTH",   valueFrom = "/${var.app_name}/${var.environment}/cache/auth_token" }
+        { name = "DB_HOST", valueFrom = "/${var.app_name}/${var.environment}/db/endpoint" },
+        { name = "DB_PASSWORD", valueFrom = "/${var.app_name}/${var.environment}/db/password" },
+        { name = "REDIS_HOST", valueFrom = "/${var.app_name}/${var.environment}/cache/endpoint" },
+        { name = "REDIS_AUTH", valueFrom = "/${var.app_name}/${var.environment}/cache/auth_token" }
       ]
       logConfiguration = {
         logDriver = "awslogs"
@@ -157,13 +157,13 @@ resource "aws_ecs_task_definition" "app" {
 
 # ── ECS Service ───────────────────────────────────────────────────
 resource "aws_ecs_service" "app" {
-  name                               = "${var.app_name}-${var.environment}-service"
-  cluster                            = aws_ecs_cluster.main.id
-  task_definition                    = aws_ecs_task_definition.app.arn
-  desired_count                      = var.ecs_desired_count
-  launch_type                        = "FARGATE"
-  health_check_grace_period_seconds  = 60
-  enable_execute_command             = true
+  name                              = "${var.app_name}-${var.environment}-service"
+  cluster                           = aws_ecs_cluster.main.id
+  task_definition                   = aws_ecs_task_definition.app.arn
+  desired_count                     = var.ecs_desired_count
+  launch_type                       = "FARGATE"
+  health_check_grace_period_seconds = 60
+  enable_execute_command            = true
 
   network_configuration {
     subnets          = var.private_app_subnet_ids

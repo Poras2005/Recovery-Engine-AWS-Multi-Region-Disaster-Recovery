@@ -75,7 +75,7 @@ resource "aws_s3_bucket_replication_configuration" "app" {
       storage_class = "STANDARD_IA"
 
       replication_time {
-        status  = "Enabled"
+        status = "Enabled"
         time {
           minutes = 15
         }
@@ -94,7 +94,7 @@ resource "aws_s3_bucket_replication_configuration" "app" {
     }
 
     filter {}
-    
+
     delete_marker_replication {
       status = "Enabled"
     }

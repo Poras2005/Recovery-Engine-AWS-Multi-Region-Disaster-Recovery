@@ -86,7 +86,7 @@ module "monitoring" {
   is_primary               = true
   dr_region                = var.dr_region
   kms_key_arn              = module.security.kms_key_arn
-  failover_lambda_role_arn = ""   # Not used in primary; failover Lambda lives in DR
+  failover_lambda_role_arn = "" # Not used in primary; failover Lambda lives in DR
   ecs_cluster_name         = module.compute.ecs_cluster_name
   ecs_service_name         = module.compute.ecs_service_name
   prod_task_count          = var.ecs_desired_count
@@ -94,11 +94,11 @@ module "monitoring" {
   alert_topic_arn          = module.dns.health_check_alerts_topic_arn
 
   # These are populated after DR is deployed; use empty strings on first apply
-  global_cluster_id        = module.database.global_cluster_id
-  dr_cluster_id            = try(data.terraform_remote_state.dr.outputs.aurora_cluster_id, "")
-  dr_cluster_arn           = try(data.terraform_remote_state.dr.outputs.aurora_cluster_arn, "")
-  primary_health_check_id  = module.dns.primary_health_check_id
-  dr_health_check_id       = module.dns.dr_health_check_id
+  global_cluster_id       = module.database.global_cluster_id
+  dr_cluster_id           = try(data.terraform_remote_state.dr.outputs.aurora_cluster_id, "")
+  dr_cluster_arn          = try(data.terraform_remote_state.dr.outputs.aurora_cluster_arn, "")
+  primary_health_check_id = module.dns.primary_health_check_id
+  dr_health_check_id      = module.dns.dr_health_check_id
 
   tags = local.common_tags
 }
@@ -122,16 +122,16 @@ module "networking" {
 module "storage" {
   source = "../../modules/storage"
 
-  app_name            = var.app_name
-  environment         = "primary"
-  aws_account_id      = var.aws_account_id
-  is_primary          = true
-  kms_key_arn         = module.security.kms_key_arn
-  dr_kms_key_arn      = try(data.terraform_remote_state.dr.outputs.kms_key_arn, "")
-  dr_bucket_arn       = try(data.terraform_remote_state.dr.outputs.app_bucket_arn, "")
+  app_name             = var.app_name
+  environment          = "primary"
+  aws_account_id       = var.aws_account_id
+  is_primary           = true
+  kms_key_arn          = module.security.kms_key_arn
+  dr_kms_key_arn       = try(data.terraform_remote_state.dr.outputs.kms_key_arn, "")
+  dr_bucket_arn        = try(data.terraform_remote_state.dr.outputs.app_bucket_arn, "")
   replication_role_arn = module.security.s3_replication_role_arn
-  elb_account_id      = var.elb_service_account_id
-  tags                = local.common_tags
+  elb_account_id       = var.elb_service_account_id
+  tags                 = local.common_tags
 }
 
 # ── Database ──────────────────────────────────────────────────────
@@ -147,12 +147,12 @@ module "database" {
   kms_key_arn             = module.security.kms_key_arn
   rds_monitoring_role_arn = module.security.rds_monitoring_role_arn
 
-  database_name           = var.database_name
-  db_master_username      = var.db_master_username
-  db_master_password      = var.db_master_password
-  
-  backup_retention_days   = var.backup_retention_days
-  deletion_protection    = var.deletion_protection
+  database_name      = var.database_name
+  db_master_username = var.db_master_username
+  db_master_password = var.db_master_password
+
+  backup_retention_days = var.backup_retention_days
+  deletion_protection   = var.deletion_protection
 
   redis_node_type    = var.primary_redis_node_type
   redis_num_replicas = var.primary_redis_num_replicas
@@ -211,18 +211,18 @@ module "backup" {
 module "dns" {
   source = "../../modules/dns"
 
-  app_name              = var.app_name
-  domain_name           = var.domain_name
-  primary_alb_dns_name  = module.compute.alb_dns_name
-  primary_alb_zone_id   = module.compute.alb_zone_id
-  dr_alb_dns_name       = try(data.terraform_remote_state.dr.outputs.alb_dns_name, module.compute.alb_dns_name)
-  dr_alb_zone_id        = try(data.terraform_remote_state.dr.outputs.alb_zone_id,  module.compute.alb_zone_id)
-  health_check_path     = var.health_check_path
-  kms_key_arn           = module.security.kms_key_arn
+  app_name                  = var.app_name
+  domain_name               = var.domain_name
+  primary_alb_dns_name      = module.compute.alb_dns_name
+  primary_alb_zone_id       = module.compute.alb_zone_id
+  dr_alb_dns_name           = try(data.terraform_remote_state.dr.outputs.alb_dns_name, module.compute.alb_dns_name)
+  dr_alb_zone_id            = try(data.terraform_remote_state.dr.outputs.alb_zone_id, module.compute.alb_zone_id)
+  health_check_path         = var.health_check_path
+  kms_key_arn               = module.security.kms_key_arn
   failover_lambda_topic_arn = module.monitoring.failover_trigger_topic_arn
-  alert_emails          = var.alert_emails
-  pagerduty_endpoint    = var.pagerduty_endpoint
-  tags                  = local.common_tags
+  alert_emails              = var.alert_emails
+  pagerduty_endpoint        = var.pagerduty_endpoint
+  tags                      = local.common_tags
 }
 
 # ── Remote State Bootstrap (first-time only) ─────────────────────

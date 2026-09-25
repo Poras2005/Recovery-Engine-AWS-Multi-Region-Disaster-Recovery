@@ -13,7 +13,7 @@ resource "aws_backup_plan" "main" {
   rule {
     rule_name         = "daily-backup"
     target_vault_name = aws_backup_vault.main.name
-    schedule          = "cron(0 2 * * ? *)"  # 02:00 UTC daily
+    schedule          = "cron(0 2 * * ? *)" # 02:00 UTC daily
 
     start_window      = 60
     completion_window = 180
@@ -33,7 +33,7 @@ resource "aws_backup_plan" "main" {
   rule {
     rule_name         = "weekly-backup"
     target_vault_name = aws_backup_vault.main.name
-    schedule          = "cron(0 3 ? * SUN *)"  # 03:00 UTC every Sunday
+    schedule          = "cron(0 3 ? * SUN *)" # 03:00 UTC every Sunday
 
     start_window      = 60
     completion_window = 300

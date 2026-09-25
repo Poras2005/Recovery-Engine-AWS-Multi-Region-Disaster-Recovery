@@ -38,12 +38,12 @@ data "archive_file" "failover_lambda" {
 }
 
 resource "aws_lambda_function" "failover" {
-  function_name    = "${var.app_name}-failover-orchestrator"
-  role             = var.failover_lambda_role_arn
-  runtime          = "python3.12"
-  handler          = "failover_lambda.handler"
-  timeout          = 900   # 15 minutes — Aurora promotion can take time
-  memory_size      = 256
+  function_name = "${var.app_name}-failover-orchestrator"
+  role          = var.failover_lambda_role_arn
+  runtime       = "python3.12"
+  handler       = "failover_lambda.handler"
+  timeout       = 900 # 15 minutes — Aurora promotion can take time
+  memory_size   = 256
 
   filename         = data.archive_file.failover_lambda.output_path
   source_code_hash = data.archive_file.failover_lambda.output_base64sha256
@@ -88,7 +88,7 @@ resource "aws_cloudwatch_metric_alarm" "rds_replication_lag" {
   namespace           = "AWS/RDS"
   period              = 60
   statistic           = "Maximum"
-  threshold           = 5  # 5 seconds
+  threshold           = 5 # 5 seconds
 
   dimensions = {
     DBInstanceIdentifier = var.dr_cluster_id
@@ -165,8 +165,8 @@ resource "aws_cloudwatch_dashboard" "dr_overview" {
   dashboard_body = jsonencode({
     widgets = [
       {
-        type   = "metric"
-        x = 0, y = 0, width = 12, height = 6
+        type = "metric"
+        x    = 0, y = 0, width = 12, height = 6
         properties = {
           title   = "RDS Replication Lag (Seconds)"
           metrics = [["AWS/RDS", "ReplicaLag", "DBInstanceIdentifier", var.dr_cluster_id]]
@@ -179,10 +179,10 @@ resource "aws_cloudwatch_dashboard" "dr_overview" {
         }
       },
       {
-        type   = "metric"
-        x = 12, y = 0, width = 12, height = 6
+        type = "metric"
+        x    = 12, y = 0, width = 12, height = 6
         properties = {
-          title   = "Route 53 Health Check Status"
+          title = "Route 53 Health Check Status"
           metrics = [
             ["AWS/Route53", "HealthCheckStatus", "HealthCheckId", var.primary_health_check_id, { label = "Primary" }],
             ["AWS/Route53", "HealthCheckStatus", "HealthCheckId", var.dr_health_check_id, { label = "DR" }]
@@ -193,8 +193,8 @@ resource "aws_cloudwatch_dashboard" "dr_overview" {
         }
       },
       {
-        type   = "metric"
-        x = 0, y = 6, width = 8, height = 6
+        type = "metric"
+        x    = 0, y = 6, width = 8, height = 6
         properties = {
           title   = "ECS Service — Running Tasks"
           metrics = [["ECS/ContainerInsights", "RunningTaskCount", "ServiceName", var.ecs_service_name, "ClusterName", var.ecs_cluster_name]]
@@ -204,10 +204,10 @@ resource "aws_cloudwatch_dashboard" "dr_overview" {
         }
       },
       {
-        type   = "metric"
-        x = 8, y = 6, width = 8, height = 6
+        type = "metric"
+        x    = 8, y = 6, width = 8, height = 6
         properties = {
-          title   = "ALB — Request Count & 5xx Errors"
+          title = "ALB — Request Count & 5xx Errors"
           metrics = [
             ["AWS/ApplicationELB", "RequestCount", "LoadBalancer", var.alb_arn_suffix, { label = "Requests", stat = "Sum" }],
             ["AWS/ApplicationELB", "HTTPCode_Target_5XX_Count", "LoadBalancer", var.alb_arn_suffix, { label = "5xx Errors", stat = "Sum", color = "#ff0000" }]
@@ -217,8 +217,8 @@ resource "aws_cloudwatch_dashboard" "dr_overview" {
         }
       },
       {
-        type   = "metric"
-        x = 16, y = 6, width = 8, height = 6
+        type = "metric"
+        x    = 16, y = 6, width = 8, height = 6
         properties = {
           title   = "RDS DB Connections"
           metrics = [["AWS/RDS", "DatabaseConnections", "DBInstanceIdentifier", var.dr_cluster_id]]

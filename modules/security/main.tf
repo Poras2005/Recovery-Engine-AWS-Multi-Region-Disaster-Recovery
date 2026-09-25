@@ -6,7 +6,7 @@ resource "aws_kms_key" "main" {
   description             = "${var.app_name}-${var.environment} encryption key"
   deletion_window_in_days = 30
   enable_key_rotation     = true
-  multi_region            = var.is_primary  # Primary key for multi-region replication
+  multi_region            = var.is_primary # Primary key for multi-region replication
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -68,8 +68,8 @@ resource "aws_iam_role_policy" "ecs_execution_ssm" {
     Version = "2012-10-17"
     Statement = [
       {
-        Effect = "Allow"
-        Action = ["ssm:GetParameters", "ssm:GetParameter"]
+        Effect   = "Allow"
+        Action   = ["ssm:GetParameters", "ssm:GetParameter"]
         Resource = "arn:aws:ssm:${var.aws_region}:${var.aws_account_id}:parameter/${var.app_name}/${var.environment}/*"
       },
       {
@@ -311,6 +311,6 @@ resource "aws_secretsmanager_secret_version" "db_credentials" {
   })
 
   lifecycle {
-    ignore_changes = [secret_string]  # Rotated externally
+    ignore_changes = [secret_string] # Rotated externally
   }
 }

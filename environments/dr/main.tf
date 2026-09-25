@@ -20,7 +20,7 @@ terraform {
   backend "s3" {
     bucket         = "REPLACE_WITH_YOUR_STATE_BUCKET"
     key            = "dr/terraform.tfstate"
-    region         = "us-east-1"   # State bucket is always in primary region
+    region         = "us-east-1" # State bucket is always in primary region
     dynamodb_table = "REPLACE_WITH_YOUR_LOCK_TABLE"
     encrypt        = true
   }
@@ -112,7 +112,7 @@ module "networking" {
   environment        = "dr"
   vpc_cidr           = var.dr_vpc_cidr
   availability_zones = var.dr_azs
-  is_primary         = false   # single NAT GW in DR to save cost
+  is_primary         = false # single NAT GW in DR to save cost
   app_port           = var.app_port
   flow_log_role_arn  = module.security.vpc_flow_logs_role_arn
   flow_log_group_arn = module.monitoring.vpc_flow_logs_group_arn
@@ -132,8 +132,8 @@ module "storage" {
   # DR bucket does NOT initiate replication; it receives it
   dr_bucket_arn        = ""
   replication_role_arn = ""
-  elb_account_id         = var.elb_service_account_id  # eu-west-1
-  tags = local.common_tags
+  elb_account_id       = var.elb_service_account_id # eu-west-1
+  tags                 = local.common_tags
 }
 
 # ── Database (Aurora secondary cluster + scaled-down Redis) ───────
@@ -149,10 +149,10 @@ module "database" {
   kms_key_arn             = module.security.kms_key_arn
   rds_monitoring_role_arn = module.security.rds_monitoring_role_arn
 
-  database_name         = var.database_name
-  db_master_username    = var.db_master_username
-  db_master_password    = var.db_master_password
-  global_cluster_id     = local.global_cluster_id
+  database_name      = var.database_name
+  db_master_username = var.db_master_username
+  db_master_password = var.db_master_password
+  global_cluster_id  = local.global_cluster_id
 
   backup_retention_days = var.backup_retention_days
   deletion_protection   = var.deletion_protection
@@ -207,7 +207,7 @@ module "backup" {
   app_name              = var.app_name
   environment           = "dr"
   kms_key_arn           = module.security.kms_key_arn
-  dr_vault_arn          = ""   # DR vault doesn't copy further
+  dr_vault_arn          = "" # DR vault doesn't copy further
   backup_retention_days = var.backup_retention_days
   aurora_cluster_arns   = [module.database.aurora_cluster_arn]
   tags                  = local.common_tags
