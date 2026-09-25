@@ -22,7 +22,6 @@ This project solves that by implementing a **Warm Standby** architecture. It mai
 | **AWS Lambda (Python 3.10)** | Executing the automated disaster recovery failover logic |
 | **Amazon RDS (MySQL)** | Primary data store with continuous Cross-Region Read Replicas |
 | **Amazon Route 53** | Global DNS routing and automated health check failover |
-| **AWS KMS & Secrets Manager** | Multi-region data encryption and secure credential storage |
 | **Amazon CloudWatch & SNS** | System observability, alarm triggering, and admin notifications |
 | **GitHub Actions** | CI/CD pipeline (\	flint\, formatting, and Python \pytest\ mock testing) |
 
